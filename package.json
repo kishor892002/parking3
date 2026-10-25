@@ -1,0 +1,14 @@
+{
+  "name": "parking-management-system",
+  "version": "1.1.0",
+  "description": "ParkEase – vehicle parking management with automatic UPI payment check-out",
+  "private": true,
+  "scripts": {
+    "start": "node server/server.js",
+    "demo": "MOCK=1 node server/server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,15 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor folders
+.vscode/
+.idea/
+
+# Dependencies and logs (if you add tooling later)
+node_modules/
+*.log
+
+# Secrets – never commit
+.env
+server/.env

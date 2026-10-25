@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ParkEase – a clean, simple vehicle parking management system. Park vehicles, track slots and calculate fees.">
+  <title>ParkEase – Vehicle Parking Management</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">P</span>
+        <div>
+          <h1>ParkEase</h1>
+          <p>Vehicle Parking Management</p>
+        </div>
+      </div>
+      <span id="payBadge" class="pay-badge" hidden></span>
+      <time id="clock" class="clock" aria-live="off"></time>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Summary -->
+    <section class="stats" aria-label="Parking summary">
+      <article class="stat">
+        <span class="stat-label">Total slots</span>
+        <strong id="statTotal">0</strong>
+      </article>
+      <article class="stat stat-occupied">
+        <span class="stat-label">Occupied</span>
+        <strong id="statOccupied">0</strong>
+      </article>
+      <article class="stat stat-free">
+        <span class="stat-label">Available</span>
+        <strong id="statFree">0</strong>
+      </article>
+      <article class="stat stat-revenue">
+        <span class="stat-label">Today's revenue</span>
+        <strong id="statRevenue">₹0</strong>
+      </article>
+    </section>
+
+    <div class="layout">
+
+      <!-- Entry form -->
+      <section class="card" aria-labelledby="entryTitle">
+        <h2 id="entryTitle">Park a vehicle</h2>
+        <form id="entryForm" novalidate>
+          <div class="field">
+            <label for="plate">Vehicle number</label>
+            <input id="plate" name="plate" type="text" placeholder="e.g. UP14AB1234" maxlength="14" autocomplete="off" required>
+          </div>
+
+          <div class="field">
+            <label for="type">Vehicle type</label>
+            <select id="type" name="type">
+              <option value="car">Car – ₹30 / hr</option>
+              <option value="bike">Bike – ₹15 / hr</option>
+              <option value="large">Truck / Van – ₹60 / hr</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="owner">Owner name</label>
+            <input id="owner" name="owner" type="text" placeholder="Full name" maxlength="40" autocomplete="off" required>
+          </div>
+
+          <div class="field">
+            <label for="phone">Phone <span class="optional">(optional)</span></label>
+            <input id="phone" name="phone" type="tel" placeholder="10-digit mobile number" maxlength="10" inputmode="numeric" autocomplete="off">
+          </div>
+
+          <div class="field">
+            <label for="slot">Parking slot</label>
+            <select id="slot" name="slot"></select>
+          </div>
+
+          <p id="formError" class="form-error" role="alert" hidden></p>
+
+          <button type="submit" class="btn btn-primary btn-block">Park vehicle</button>
+        </form>
+      </section>
+
+      <!-- Slot map -->
+      <section class="card" aria-labelledby="mapTitle">
+        <div class="card-head">
+          <h2 id="mapTitle">Slot map</h2>
+          <ul class="legend" aria-label="Legend">
+            <li><span class="dot dot-free"></span>Available</li>
+            <li><span class="dot dot-occupied"></span>Occupied</li>
+          </ul>
+        </div>
+        <div id="slotGrid" class="zones"></div>
+        <p class="hint">Click a free slot to select it, or an occupied slot to check the vehicle out.</p>
+      </section>
+
+    </div>
+
+    <!-- Records -->
+    <section class="card" aria-labelledby="recordsTitle">
+      <div class="card-head card-head-wrap">
+        <h2 id="recordsTitle">Records</h2>
+        <div class="tabs" role="tablist">
+          <button class="tab is-active" role="tab" aria-selected="true" data-tab="parked" id="tab-parked">Currently parked</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="history" id="tab-history">History</button>
+        </div>
+      </div>
+
+      <!-- Currently parked -->
+      <div id="panel-parked" class="panel" role="tabpanel" aria-labelledby="tab-parked">
+        <div class="toolbar">
+          <input id="search" type="search" placeholder="Search by number, owner or slot…" aria-label="Search parked vehicles">
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Vehicle</th>
+                <th>Type</th>
+                <th>Owner</th>
+                <th>Slot</th>
+                <th>Entry</th>
+                <th>Duration</th>
+                <th>Fee so far</th>
+                <th><span class="sr-only">Action</span></th>
+              </tr>
+            </thead>
+            <tbody id="parkedBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- History -->
+      <div id="panel-history" class="panel" role="tabpanel" aria-labelledby="tab-history" hidden>
+        <div class="toolbar toolbar-right">
+          <button id="exportBtn" class="btn btn-ghost" type="button">Export CSV</button>
+          <button id="clearBtn" class="btn btn-ghost btn-danger-text" type="button">Clear history</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Vehicle</th>
+                <th>Type</th>
+                <th>Owner</th>
+                <th>Slot</th>
+                <th>Entry</th>
+                <th>Exit</th>
+                <th>Duration</th>
+                <th>Fee</th>
+              </tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>ParkEase · Fees are charged per started hour (minimum 1 hour). Data is saved in your browser.</p>
+    </div>
+  </footer>
+
+  <!-- Check-out / receipt modal -->
+  <div id="modal" class="modal" hidden>
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <h3 id="modalTitle"></h3>
+      <div id="modalBody"></div>
+      <div id="modalActions" class="modal-actions"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="qr.js"></script>
+  <script src="qr-data.js"></script>
+  <script src="pdf.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
